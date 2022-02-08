@@ -9,8 +9,11 @@ import scrapy
 
 
 class CarscrapperItem(scrapy.Item):
+    _id = scrapy.Field()
     name = scrapy.Field()
-    price = scrapy.Field()
+    price_usd = scrapy.Field()
+    price_eur = scrapy.Field()
     img = scrapy.Field()
+    ts = scrapy.Field()
 
     
