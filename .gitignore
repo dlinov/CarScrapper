@@ -1,4 +1,11 @@
+# python
 **/__pycache__
+venv/
+
+# mongo
+mongo-volume/
+
+# logs
 logs/
 **/*.log
 

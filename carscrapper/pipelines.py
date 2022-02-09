@@ -5,7 +5,6 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 import pymongo
-import time
 from datetime import datetime
 
 class CarscrapperPipeline(object):
@@ -16,17 +15,27 @@ class CarscrapperPipeline(object):
             27017
         )
         db = self.conn['cars']
-        self.collection = db['cars_tb']
+        self.collection = db['scraped_data']
     
     def process_item(self, item, spider):
-        ts = time.time()
-        item['ts'] = datetime.utcfromtimestamp(ts)
+        ts = datetime.isoformat(datetime.now())
+        # print(f'=== Processing {item} at {ts}')
+        cars = self.collection
         img = item['img']
         img = img.replace('");', '')
         img = img.replace('background-image: url("', '')
         item['img'] = img
         obj = dict(item)
-        id = obj.pop('_id')
-        # TODO: update only if contents differ
-        self.collection.update({'_id': id}, {'$push': {'versions': obj}})
+        id = obj['url'].split('/')[-1]
+        existing = cars.find_one(id)
+        # print(f'=== Car {id}: {existing}')
+        if existing:
+            prev_state = existing['versions'][-1]
+            # update only if contents differ
+            # TODO: check if comparison works as expected
+            # print(f'=== Comparing car {id}: {prev_state} and {obj}')
+            if obj != prev_state:
+                cars.update_one({'_id': id}, {'$push': {'versions': {'ts': ts, 'state': obj}}})
+        else:
+            cars.insert_one({'_id': id, 'versions': [{'ts': ts, 'state': obj}]})
         return item

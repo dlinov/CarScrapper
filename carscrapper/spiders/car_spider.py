@@ -6,7 +6,7 @@ from ..items import CarscrapperItem
 class CarsSpider(scrapy.Spider):
     name = "cars"
      # 205 or more for prod, maybe somehow dynamically determine exact number 
-    start_urls = list(f"https://ab.onliner.by/?page={page}" for page in range(1, 5))
+    start_urls = list(f"https://ab.onliner.by/?page={page}" for page in range(1, 2))
     
     def __init__(self):
         options = Options()
@@ -28,7 +28,7 @@ class CarsSpider(scrapy.Spider):
             price_usd = next(filter(lambda p: p.endswith('$'), prices_stripped), None)
             price_eur = next(filter(lambda p: p.endswith('€'), prices_stripped), None)
             
-            item['_id'] = response.url.split('/')[-1]
+            item['url'] = car_div.attrib['href']
             item['name'] = name.strip()
             item['price_usd'] = price_usd
             item['price_eur'] = price_eur
